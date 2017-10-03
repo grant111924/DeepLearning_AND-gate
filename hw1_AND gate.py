@@ -15,22 +15,21 @@ x=T.vector() #data feature value
 y=T.scalar() #data labeled value 0 or 1
 w=theano.shared(np.array([random.random(),random.random()],dtype=np.float64),'w')#weight inital value=[1,1]
 b=theano.shared(0.)  #bias inital value=0
-eta=0.1    #Learning rate
-time = 50000 #training_iterations times
+eta=0.5   #Learning rate
+time = 150000 #training_iterations times
                
 z=T.dot(w,x)+b   #compute z=wX+b 
-predictY=1/(1+T.exp(-z))  # sigmoid activation function => [0,1] interval value        
-neurno = theano.function([x],predictY)
-cost =T.sum((predictY-y)**2) #cost function  
-dw,db=T.grad(cost,[w,b]) #gradient
-gradient = theano.function([x,y],updates=[(w,w-eta*dw),(b,b-eta*db)])
-
+sigmF=1/(1+T.exp(-z))  # sigmoid activation function => [0,1] interval value        
+cost =T.sum((sigmF-y)**2) #cost function  
+dw,db=T.grad(cost,[w,b]) #gradient compute
+gradient = theano.function([x,y],updates=[(w,w-eta*dw),(b,b-eta*db)])# update function
+neurnoPredict = theano.function([x],sigmF)  #computer predict result
 # Set inputs and correct output values
 X=[[0,0],[1,1],[1,0],[0,1]]
 Y=[0,1,0,0]
 
-
-for time in range(time):
+#Training data
+for t in range(time):
      i=random.randrange(0,4)
      x=X[i]
      y=Y[i]
@@ -39,11 +38,13 @@ for time in range(time):
      gradient(x,y)
      #print(w.get_value(),b.get_value())
  
-
+#Get the best Weight and Bias
 W=w.get_value()
 B=b.get_value()
 dataX=[]
 dataY=[]
+
+#draw picture
 for i in range(1000):
     x_axis = random.uniform(0,1)
     y_axis = (W[0]*x_axis+B)/(-W[1])
@@ -51,19 +52,13 @@ for i in range(1000):
     dataY.append(y_axis)
    # print(x_axis)
    # print(y_axis)
-    
 plt.plot(dataX,dataY,"o")
 plt.xlim(0,1)
 plt.ylim(0,1)
 plt.show() 
 
-
-
-
-
-
-
-test=[[1,1],[1,0],[1,1],[0,0],[1,1]]
+#Testing data
+test=[[1,1],[1,0],[1,1],[0,1],[1,1]]
 for i in range(len(test)):
-    print(neurno(test[i]))
+    print(neurnoPredict(test[i]))
 
